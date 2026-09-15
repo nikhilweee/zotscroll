@@ -1,0 +1,41 @@
+<vbox id="zotscroll-preferences-pane"
+      onload="Zotero.Zotscroll?.initPreferences(window)"
+      onshowing="Zotero.Zotscroll?.initPreferences(window)">
+    <groupbox class="main-section" style="padding: 16px;">
+        <label><html:h2 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600;">Keyboard Shortcuts</html:h2></label>
+        <description style="margin-bottom: 16px; color: var(--in-content-deemphasized-text, #666);">
+            Click an input and press any letter key (a-z) or arrow key to customize the shortcut.
+        </description>
+
+        <html:table style="border-collapse: separate; border-spacing: 12px 10px; max-width: 420px;">
+            <html:tr>
+                <html:td style="font-weight: 500;"><html:label for="zotscroll-pref-scrollDown">Scroll Down:</html:label></html:td>
+                <html:td><html:input id="zotscroll-pref-scrollDown" style="width: 150px; padding: 4px 8px; text-align: center;" readonly="readonly" /></html:td>
+            </html:tr>
+            <html:tr>
+                <html:td style="font-weight: 500;"><html:label for="zotscroll-pref-scrollUp">Scroll Up:</html:label></html:td>
+                <html:td><html:input id="zotscroll-pref-scrollUp" style="width: 150px; padding: 4px 8px; text-align: center;" readonly="readonly" /></html:td>
+            </html:tr>
+            <html:tr>
+                <html:td style="font-weight: 500;"><html:label for="zotscroll-pref-scrollLeft">Scroll Left:</html:label></html:td>
+                <html:td><html:input id="zotscroll-pref-scrollLeft" style="width: 150px; padding: 4px 8px; text-align: center;" readonly="readonly" /></html:td>
+            </html:tr>
+            <html:tr>
+                <html:td style="font-weight: 500;"><html:label for="zotscroll-pref-scrollRight">Scroll Right:</html:label></html:td>
+                <html:td><html:input id="zotscroll-pref-scrollRight" style="width: 150px; padding: 4px 8px; text-align: center;" readonly="readonly" /></html:td>
+            </html:tr>
+            <html:tr>
+                <html:td style="font-weight: 500;"><html:label for="zotscroll-pref-halfPageDown">Half-Page Down:</html:label></html:td>
+                <html:td><html:input id="zotscroll-pref-halfPageDown" style="width: 150px; padding: 4px 8px; text-align: center;" readonly="readonly" /></html:td>
+            </html:tr>
+            <html:tr>
+                <html:td style="font-weight: 500;"><html:label for="zotscroll-pref-halfPageUp">Half-Page Up:</html:label></html:td>
+                <html:td><html:input id="zotscroll-pref-halfPageUp" style="width: 150px; padding: 4px 8px; text-align: center;" readonly="readonly" /></html:td>
+            </html:tr>
+        </html:table>
+
+        <hbox style="margin-top: 20px;">
+            <button id="zotscroll-pref-reset-btn" label="Reset to Defaults" oncommand="Zotero.Zotscroll?.resetDefaults(window)" />
+        </hbox>
+    </groupbox>
+</vbox>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="100%" height="100%">
+  <defs>
+    <!-- Down Arrow Gradient (Crimson to Coral) -->
+    <linearGradient id="downArrowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff4b72"/>
+      <stop offset="60%" stop-color="#e0245e"/>
+      <stop offset="100%" stop-color="#c2185b"/>
+    </linearGradient>
+
+    <!-- Up Arrow Gradient (Purple to Violet) -->
+    <linearGradient id="upArrowGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="60%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#c026d3"/>
+    </linearGradient>
+
+    <!-- Central Track Glow -->
+    <linearGradient id="pulseGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff4b72" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#9333ea" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <g id="zotscroll-dual-arrows">
+    <!-- Subtle Kinetic Center Speed Lines (indicates vertical page motion) -->
+    <line x1="48" y1="28" x2="48" y2="40" stroke="url(#pulseGlow)" stroke-width="3" stroke-linecap="round" />
+    <line x1="48" y1="46" x2="48" y2="50" stroke="url(#pulseGlow)" stroke-width="3" stroke-linecap="round" />
+    <line x1="48" y1="56" x2="48" y2="68" stroke="url(#pulseGlow)" stroke-width="3" stroke-linecap="round" />
+
+    <!-- 1. Left Arrow (Scrolling Down) -->
+    <!-- Curved Stem -->
+    <path d="M 58,12 C 40,12 26,22 26,38 L 26,62"
+          fill="none"
+          stroke="url(#downArrowGrad)"
+          stroke-width="7"
+          stroke-linecap="round" />
+    <!-- Aerodynamic Arrowhead pointing Down -->
+    <path d="M 26,86 L 12,62 C 16,65 22,66 26,66 C 30,66 36,65 40,62 Z"
+          fill="url(#downArrowGrad)" />
+
+    <!-- 2. Right Arrow (Scrolling Up - 180° Rotational Symmetry) -->
+    <!-- Curved Stem -->
+    <path d="M 38,84 C 56,84 70,74 70,58 L 70,34"
+          fill="none"
+          stroke="url(#upArrowGrad)"
+          stroke-width="7"
+          stroke-linecap="round" />
+    <!-- Aerodynamic Arrowhead pointing Up -->
+    <path d="M 70,10 L 84,34 C 80,31 74,30 70,30 C 66,30 60,31 56,34 Z"
+          fill="url(#upArrowGrad)" />
+  </g>
+</svg>

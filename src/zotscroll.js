@@ -1,9 +1,38 @@
 Zotscroll = {
+    DEFAULT_SHORTCUTS: {
+        scrollDown: "j",
+        scrollUp: "k",
+        scrollLeft: "h",
+        scrollRight: "l",
+        halfPageDown: "d",
+        halfPageUp: "e"
+    },
+
+    shortcuts: null,
     notifierID: null,
+    prefObserverSymbol: null,
     originalReaderOpen: null,
     attachedReaders: new Map(),
 
+    loadShortcuts() {
+        try {
+            const raw = Zotero.Prefs.get("zotscroll.shortcuts");
+            this.shortcuts = raw
+                ? Object.assign({}, this.DEFAULT_SHORTCUTS, JSON.parse(raw))
+                : Object.assign({}, this.DEFAULT_SHORTCUTS);
+        } catch (_) {
+            this.shortcuts = Object.assign({}, this.DEFAULT_SHORTCUTS);
+        }
+    },
+
     start() {
+        this.loadShortcuts();
+        this.prefObserverSymbol = Zotero.Prefs.registerObserver("zotscroll.shortcuts", () => {
+            this.loadShortcuts();
+        });
+
+        Zotero.Zotscroll = this;
+
         if (Array.isArray(Zotero.Reader?._readers)) {
             for (const reader of Zotero.Reader._readers) {
                 this.attachToReader(reader);
@@ -37,6 +66,86 @@ Zotscroll = {
             ["tab"],
             "zotscroll"
         );
+    },
+
+    formatKey(key) {
+        switch (key) {
+            case "ArrowUp": return "↑ (ArrowUp)";
+            case "ArrowDown": return "↓ (ArrowDown)";
+            case "ArrowLeft": return "← (ArrowLeft)";
+            case "ArrowRight": return "→ (ArrowRight)";
+            default: return key;
+        }
+    },
+
+    initPreferences(win) {
+        const doc = win?.document || document;
+        const shortcuts = this.shortcuts || this.DEFAULT_SHORTCUTS;
+
+        const commands = [
+            "scrollDown",
+            "scrollUp",
+            "scrollLeft",
+            "scrollRight",
+            "halfPageDown",
+            "halfPageUp"
+        ];
+
+        for (const cmd of commands) {
+            const input = doc.getElementById(`zotscroll-pref-${cmd}`);
+            if (!input) continue;
+
+            input.value = this.formatKey(shortcuts[cmd]);
+
+            if (input._zotscrollBound) continue;
+            input._zotscrollBound = true;
+
+            input.addEventListener("keydown", (e) => {
+                let key = null;
+                if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+                    key = e.key;
+                } else if (/^[a-zA-Z]$/.test(e.key)) {
+                    key = e.key.toLowerCase();
+                }
+
+                if (key) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    this.shortcuts[cmd] = key;
+                    Zotero.Prefs.set("zotscroll.shortcuts", JSON.stringify(this.shortcuts));
+
+                    input.value = this.formatKey(key);
+                    input.blur();
+                } else if (e.key === "Tab" || e.key === "Escape") {
+                    // Normal tab navigation
+                } else {
+                    e.preventDefault();
+                }
+            });
+        }
+    },
+
+    resetDefaults(win) {
+        const doc = win?.document || document;
+        this.shortcuts = Object.assign({}, this.DEFAULT_SHORTCUTS);
+        Zotero.Prefs.set("zotscroll.shortcuts", JSON.stringify(this.shortcuts));
+
+        const commands = [
+            "scrollDown",
+            "scrollUp",
+            "scrollLeft",
+            "scrollRight",
+            "halfPageDown",
+            "halfPageUp"
+        ];
+
+        for (const cmd of commands) {
+            const input = doc.getElementById(`zotscroll-pref-${cmd}`);
+            if (input) {
+                input.value = this.formatKey(this.DEFAULT_SHORTCUTS[cmd]);
+            }
+        }
     },
 
     async attachToReader(reader) {
@@ -98,6 +207,10 @@ Zotscroll = {
     },
 
     setupSmoothScroll(win, container) {
+        if (typeof container._zotscrollCleanup === "function") {
+            try { container._zotscrollCleanup(); } catch (_) {}
+        }
+
         const pressedKeys = new Set();
         let pageTargetY = null;
         let isAnimating = false;
@@ -114,24 +227,26 @@ Zotscroll = {
 
         const animate = (timestamp) => {
             if (!lastTime) lastTime = timestamp;
-            const dt = Math.min(32, timestamp - lastTime) / 1000;
+            // Clamp dt to 100ms to preserve velocity through PDF canvas rendering frame drops
+            const dt = Math.min(100, timestamp - lastTime) / 1000;
             lastTime = timestamp;
 
             const maxX = container.scrollWidth - container.clientWidth;
             const maxY = container.scrollHeight - container.clientHeight;
             const delta = scrollSpeed * dt;
+            const sc = Zotero?.Zotscroll?.shortcuts || this.shortcuts || this.DEFAULT_SHORTCUTS;
 
-            if (pressedKeys.has("j")) {
+            if (pressedKeys.has(sc.scrollDown)) {
                 pageTargetY = null;
                 container.scrollTop = Math.min(maxY, container.scrollTop + delta);
-            } else if (pressedKeys.has("k")) {
+            } else if (pressedKeys.has(sc.scrollUp)) {
                 pageTargetY = null;
                 container.scrollTop = Math.max(0, container.scrollTop - delta);
             }
 
-            if (pressedKeys.has("l")) {
+            if (pressedKeys.has(sc.scrollRight)) {
                 container.scrollLeft = Math.min(maxX, container.scrollLeft + delta);
-            } else if (pressedKeys.has("h")) {
+            } else if (pressedKeys.has(sc.scrollLeft)) {
                 container.scrollLeft = Math.max(0, container.scrollLeft - delta);
             }
 
@@ -166,49 +281,56 @@ Zotscroll = {
         const handleKeyDown = (e) => {
             if (e.ctrlKey || e.altKey || e.metaKey || this.isEditable(e.target)) return false;
 
+            const sc = Zotero?.Zotscroll?.shortcuts || this.shortcuts || this.DEFAULT_SHORTCUTS;
+            const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
             const maxX = container.scrollWidth - container.clientWidth;
             const maxY = container.scrollHeight - container.clientHeight;
 
-            switch (e.key) {
-                case "j":
-                    if (!pressedKeys.has("j")) container.scrollTop = Math.min(maxY, container.scrollTop + tapStep);
-                    pressedKeys.add("j");
-                    pressedKeys.delete("k");
-                    startAnimation();
-                    return true;
-                case "k":
-                    if (!pressedKeys.has("k")) container.scrollTop = Math.max(0, container.scrollTop - tapStep);
-                    pressedKeys.add("k");
-                    pressedKeys.delete("j");
-                    startAnimation();
-                    return true;
-                case "h":
-                    if (!pressedKeys.has("h")) container.scrollLeft = Math.max(0, container.scrollLeft - tapStep);
-                    pressedKeys.add("h");
-                    pressedKeys.delete("l");
-                    startAnimation();
-                    return true;
-                case "l":
-                    if (!pressedKeys.has("l")) container.scrollLeft = Math.min(maxX, container.scrollLeft + tapStep);
-                    pressedKeys.add("l");
-                    pressedKeys.delete("h");
-                    startAnimation();
-                    return true;
-                case "d":
-                    pageTargetY = Math.min(maxY, container.scrollTop + container.clientHeight * 0.5);
-                    startAnimation();
-                    return true;
-                case "e":
-                    pageTargetY = Math.max(0, container.scrollTop - container.clientHeight * 0.5);
-                    startAnimation();
-                    return true;
-                default:
-                    return false;
+            if (key === sc.scrollDown) {
+                if (!pressedKeys.has(key)) container.scrollTop = Math.min(maxY, container.scrollTop + tapStep);
+                pressedKeys.add(key);
+                pressedKeys.delete(sc.scrollUp);
+                startAnimation();
+                return true;
             }
+            if (key === sc.scrollUp) {
+                if (!pressedKeys.has(key)) container.scrollTop = Math.max(0, container.scrollTop - tapStep);
+                pressedKeys.add(key);
+                pressedKeys.delete(sc.scrollDown);
+                startAnimation();
+                return true;
+            }
+            if (key === sc.scrollLeft) {
+                if (!pressedKeys.has(key)) container.scrollLeft = Math.max(0, container.scrollLeft - tapStep);
+                pressedKeys.add(key);
+                pressedKeys.delete(sc.scrollRight);
+                startAnimation();
+                return true;
+            }
+            if (key === sc.scrollRight) {
+                if (!pressedKeys.has(key)) container.scrollLeft = Math.min(maxX, container.scrollLeft + tapStep);
+                pressedKeys.add(key);
+                pressedKeys.delete(sc.scrollLeft);
+                startAnimation();
+                return true;
+            }
+            if (key === sc.halfPageDown) {
+                pageTargetY = Math.min(maxY, container.scrollTop + container.clientHeight * 0.5);
+                startAnimation();
+                return true;
+            }
+            if (key === sc.halfPageUp) {
+                pageTargetY = Math.max(0, container.scrollTop - container.clientHeight * 0.5);
+                startAnimation();
+                return true;
+            }
+            return false;
         };
 
         const handleKeyUp = (e) => {
-            pressedKeys.delete(e.key);
+            const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+            pressedKeys.delete(key);
         };
 
         const handleBlur = () => {
@@ -228,14 +350,17 @@ Zotscroll = {
 
         container._zotscrollController = { handleKeyDown, handleKeyUp, handleBlur };
 
-        return () => {
+        const cleanup = () => {
             if (rafId) win.cancelAnimationFrame(rafId);
             container.removeEventListener("scroll", onScroll);
             win.removeEventListener("keydown", onKeyDown, true);
             win.removeEventListener("keyup", handleKeyUp, true);
             win.removeEventListener("blur", handleBlur);
             delete container._zotscrollController;
+            delete container._zotscrollCleanup;
         };
+        container._zotscrollCleanup = cleanup;
+        return cleanup;
     },
 
     isEditable(target) {
@@ -270,6 +395,11 @@ Zotscroll = {
     },
 
     shutdown() {
+        if (this.prefObserverSymbol) {
+            Zotero.Prefs.unregisterObserver(this.prefObserverSymbol);
+            this.prefObserverSymbol = null;
+        }
+
         if (this.notifierID) {
             Zotero.Notifier.unregisterObserver(this.notifierID);
             this.notifierID = null;
@@ -284,5 +414,6 @@ Zotscroll = {
             this.cleanupReader(reader);
         }
         this.attachedReaders.clear();
+        delete Zotero.Zotscroll;
     }
 };

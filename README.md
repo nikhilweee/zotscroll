@@ -1,24 +1,27 @@
 # Zotscroll
 
-A lightweight smooth scroll plugin for Zotero 10's built-in PDF reader using vim navigation keys (`hjkl`).
+Smooth Scrolling for Zotero.
 
 ## Features
 
 - **Smooth animated scrolling**: Intercepts `h`, `j`, `k`, and `l` keys and applies physics-based easing (`requestAnimationFrame`) for fluid gliding without stutter.
 - **Continuous glide on key hold**: Holding down navigation keys smoothly accelerates and accumulates movement.
 - **Input safety**: Automatically ignores key presses inside search bars, notes, comments, and form fields.
-- **Half-page jumping**: Supports `d` (half-page down) and `e` (half-page up).
+- **Customizable shortcuts**: Configure any single letter (`a`-`z`) or arrow key (`ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`) via Zotero's Settings window.
+- **Half-page jumping**: Supports half-page down and half-page up (defaults: `d` and `e`).
 
-## Keybindings (inside PDF reader)
+## Default Keybindings (inside PDF reader)
 
-| Key | Action |
-| --- | --- |
-| `j` | Smooth scroll down (hold for continuous scroll) |
-| `k` | Smooth scroll up (hold for continuous scroll) |
-| `h` | Smooth scroll left (hold for continuous scroll) |
-| `l` | Smooth scroll right (hold for continuous scroll) |
-| `d` | Smooth half-page down |
-| `e` | Smooth half-page up |
+| Command | Default Key | Customizable |
+| --- | --- | --- |
+| Scroll Down | `j` | Any letter or Arrow key |
+| Scroll Up | `k` | Any letter or Arrow key |
+| Scroll Left | `h` | Any letter or Arrow key |
+| Scroll Right | `l` | Any letter or Arrow key |
+| Half-Page Down | `d` | Any letter or Arrow key |
+| Half-Page Up | `e` | Any letter or Arrow key |
+
+To customize, open **Zotero Settings** > **Zotscroll**, click any shortcut field, and press your desired key.
 
 ## Development
 

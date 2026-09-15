@@ -2,8 +2,12 @@
     "manifest_version": 2,
     "name": "Zotscroll",
     "version": "0.1.0",
-    "description": "Smooth scrolling for Zotero PDF reader using vim keys (hjkl)",
+    "description": "Smooth Scrolling for Zotero",
     "homepage_url": "https://github.com/nikhilweee/zotscroll",
+    "icons": {
+        "48": "icon.svg",
+        "96": "icon.svg"
+    },
     "applications": {
         "zotero": {
             "id": "zotscroll@nikhilweee.me",
