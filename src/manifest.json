@@ -1,0 +1,15 @@
+{
+    "manifest_version": 2,
+    "name": "Zotscroll",
+    "version": "0.1.0",
+    "description": "Smooth scrolling for Zotero PDF reader using vim keys (hjkl)",
+    "homepage_url": "https://github.com/nikhilweee/zotscroll",
+    "applications": {
+        "zotero": {
+            "id": "zotscroll@nikhilweee.me",
+            "update_url": "https://raw.githubusercontent.com/nikhilweee/zotscroll/main/updates.json",
+            "strict_min_version": "6.999",
+            "strict_max_version": "10.*"
+        }
+    }
+}
